@@ -13,6 +13,7 @@
 #include <fstream>
 #include <random>
 #include <string.h>
+#include <chrono>
 
 default_random_engine generator;
 uniform_real_distribution<double> uniformDistribution0to1(0.0,1.0);
@@ -78,6 +79,8 @@ int main(int argc,char **argv) {
 	list<Image> frames;
 	Geometry imageSize(parameters.cols, parameters.rows);
 
+	generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+
 	// We use double-buffering with population generations
 	LatticePopulation previous(parameters.rows, parameters.cols);
 	LatticePopulation current(parameters.rows, parameters.cols);
@@ -85,6 +88,12 @@ int main(int argc,char **argv) {
 	// Inject infection in the initial population
 	previous.getPerson(parameters.cols/2, parameters.rows/2).setState(INFECTED);
 	cout << "Initial infected =" << (previous.getPerson(parameters.cols/2, parameters.rows/2).getState()==INFECTED) << "\n";
+
+#ifdef ODE
+	// Hack to make compatible with the ODE model start parameters with 0.001 initial infected
+	for (int i=0; i<55; i++)
+		previous.getPerson(parameters.cols*uniformDistribution0to1(generator), parameters.rows*uniformDistribution0to1(generator)).setState(INFECTED);
+#endif
 
 	// Initial image
 	Image image(imageSize, ColorMono(false));
@@ -102,6 +111,10 @@ int main(int argc,char **argv) {
 	// infected had infected on average.
 	list<int> lastRecoveredInfected;
 
+	// Test
+	for (int i=0; i<14; i++)
+		cout << "Pow test " << ((2.4/3.25)/(1+pow(0.84, double(i)))) << endl;
+
 	cout << "Starting simulation...\n";
 	for (int i=0; i<parameters.generations + 1; i++) {
 		cout << "Generation " << i << "\n";
@@ -115,9 +128,11 @@ int main(int argc,char **argv) {
 				// Infect others
 				if (person.getState() == INFECTED) {
 					// Infection rate drops by time
-					// This sums to R0 over 14 days
-					// TODO Better function. This one has average at about 4 days, not 3.
-					double infRate = (parameters.R0 / 3.25)/(1.0 + person.getDaysInState());
+					// TODO This probably has quite different distribution than what ODE models assume, so it produces different rate.
+					// This sums to R0 over 14 days with average at 3 days
+					// Python code to estimate it:
+					// ep=0.86; a=sum(map(lambda x: (1/1.00)/(1.0+x**ep),range(0,3))); b=sum(map(lambda x: (1/1.00)/(1.0+x**ep),range(0,15)));a/b,a,b
+					double infRate = (parameters.R0 / 3.7)/(1.0 + pow(double(person.getDaysInState()), 0.86));
 
 					double number = uniformDistribution0to1(generator);
 					if (number <= infRate) {
@@ -141,7 +156,7 @@ int main(int argc,char **argv) {
 						}
 					}
 
-					if (currentPerson.getDaysInState() > 14) {
+					if (currentPerson.getDaysInState() >= 14) {
 						currentPerson.setState(RECOVERED);
 
 						// We count average of how many each recovered infected during infection.
@@ -152,7 +167,8 @@ int main(int argc,char **argv) {
 					}
 				}
 
-				if (person.getState() == EXPOSED && currentPerson.getDaysInState() >= 3)
+				// Becomes infected after 3 days (2 discounting today)
+				if (person.getState() == EXPOSED && currentPerson.getDaysInState() >= 2)
 					currentPerson.setState(INFECTED);
 
 				// Don't increment days if the person just had a state change
@@ -183,6 +199,7 @@ int main(int argc,char **argv) {
 	}
 
 	outs.close();
+
 	cout << "Simulation ended, writing animation...\n";
 
 	try {

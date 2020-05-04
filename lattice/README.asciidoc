@@ -1,17 +1,32 @@
 = Epidemic Lattice Model
 Marko Grönroos<magi@iki.fi>
 
-This is a spatial stochastic microsimulation model running in an agent lattice.
-The main purpose of the model is to produce animations to educate the public about how the epidemic spreads, make them understand what's coming and, knowing that, make them scared like hell.
+This is a spatial stochastic microsimulation model running in an two-dimensional lattice.
+The main purpose of the model is to produce animations to educate the public about how the epidemic spreads and study phenomena affecting predictions.
 
-Sources for the many of the elements as far as parameters for Finland are:
+[WARNING]
+**The model is still very incomplete.
+Many features described below are not yet implemented.
+Many choices are questionable.
+The model currently does not take into account any mitigation measures.**
+
+Sources for the some of the elements as far as parameters for Finland are:
 
 REINA model (https://github.com/kausaltech/reina-model[at GitHub])::
 Agent-based COVID-19 simulation by Jouni Tuomisto et al.
-The simulation is for the HUS area population, but we use it for a more abstract case.
+The simulation is for the HUS area population in Finland.
 
-In the current code, all parameters are hard-coded.
-(Parameterization To Be Done.)
+Epidemiological model of the Finnish THL::
+See the https://thl.fi/documents/10531/5814325/THL+korona+mallinnuswebinaarin+kalvot+20.4.2020.pdf/cc23f5f0-87a0-8080-7b5c-121b5532bf5c?t=1587534905262[presentation].
+It's a SEIR model based on differential equations, much like the _COVID-19 Scenarios_.
+
+COVID-19 Scenarios::
+The https://covid19-scenarios.org/[COVID-19 Scenarios] is a web-based simulation model developed by the research group of Richard Neher at the Biozentrum, University of Basel (Basel, Switzerland) and many others.
+It is also based on ordinary differential equations.
+It has some issues, such as poor control for injecton of imports or initial cases, etc.
+
+[WARNING]
+**Repeat: The model is still a very incomplete prototype.**
 
 == The Model
 
@@ -33,6 +48,8 @@ Infected (Asymptomatic carrier)::
 Asymptomatic infected person who can infect others.
 At the person does not suspect infection, no changes in behaviour reduce subsequent infections.
 Infection lasts for 14 days.
++
+Note that in the THL model each infected is asymptomatic for 2 days, after which becomes symptomatic, while in the REINA model there are asymptomatic carriers all the way.
 
 Infected (Symptomatic carrier)::
 A carrier with symptoms.
@@ -44,20 +61,20 @@ Some die without hospitalization.
 +
 Infection lasts for 14 days, unless deceased.
 
-Hospitalized::
+Hospitalized (TODO)::
 An infected who becomes hospitalized.
 The patient is considered isolated at the hospital and ceases to infect.
 The symptoms can worsen and the patient may be moved to ICU.
 
-ICU::
+ICU (TODO)::
 The patient is in intensive care.
 The patient can either recover or die.
 If all ICU units are taken, 100 % of patients requiring it die.
 
-Deceased::
+Deceased (TODO)::
 The patient deceased.
 
-=== Age Groups
+=== Age Groups (TODO)
 
 === Infection
 
@@ -65,11 +82,13 @@ Infection occurs spatially so that susceptible persons nearby are more probable 
 We use a neighbourhood function _d_ = 1+1/_rnd_(), where _rnd_() is a random number [0..1].
 The lattice wraps around the edges.
 
+If the state of the infection target is any other than susceptible, infection does not occur.
+
+TODO:
+
 Age group affects infection.
 Age group contact matrix is considered to determine the age group of the person to be infected.
 As the population lattice is not organized to reflect real-life contact neighbourhoods regarding age, we fake that by searching for a matching age group from the immediate vicinity of the infection target.
-
-If the state of the infection target is any other than susceptible, infection does not occur.
 
 === Events
 

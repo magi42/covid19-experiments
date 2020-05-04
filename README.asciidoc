@@ -2,10 +2,14 @@
 
 This is a collection of my test simulations.
 They are simplified models for "educational purposes".
-Their realism varies, from vary crude models to somewhat more realistic.
+Their realism varies, from vary crude models to a bit more realistic.
 The parameters are currently for Finland.
 
-== Building the lattice model
+== The lattice model
+
+See link:lattice[the lattice directory] for more details.
+
+=== Building the lattice model
 
 Requirements (Ubuntu):
 
