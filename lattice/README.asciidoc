@@ -1,0 +1,83 @@
+= Epidemic Lattice Model
+Marko Grönroos<magi@iki.fi>
+
+This is a spatial stochastic microsimulation model running in an agent lattice.
+The main purpose of the model is to produce animations to educate the public about how the epidemic spreads, make them understand what's coming and, knowing that, make them scared like hell.
+
+Sources for the many of the elements as far as parameters for Finland are:
+
+REINA model (https://github.com/kausaltech/reina-model[at GitHub])::
+Agent-based COVID-19 simulation by Jouni Tuomisto et al.
+The simulation is for the HUS area population, but we use it for a more abstract case.
+
+In the current code, all parameters are hard-coded.
+(Parameterization To Be Done.)
+
+== The Model
+
+The population is on a _n_×_m_ lattice.
+Each person has a state, number of days in the state, and an age group.
+
+=== States
+
+States and their logic are as follows:
+
+Susceptible::
+A person susceptible for infection.
+This is the initial state of the population.
+
+Exposed::
+An infected person during the latency period, during which the person can not yet infect others.
+
+Infected (Asymptomatic carrier)::
+Asymptomatic infected person who can infect others.
+At the person does not suspect infection, no changes in behaviour reduce subsequent infections.
+Infection lasts for 14 days.
+
+Infected (Symptomatic carrier)::
+A carrier with symptoms.
+Infection rate differs from an asymptomatic carrier.
+Symptoms as such worsen infection the rate, but isolation measures reduce them.
++
+If the symptoms are strong enough, the infected may be hospitalized.
+Some die without hospitalization.
++
+Infection lasts for 14 days, unless deceased.
+
+Hospitalized::
+An infected who becomes hospitalized.
+The patient is considered isolated at the hospital and ceases to infect.
+The symptoms can worsen and the patient may be moved to ICU.
+
+ICU::
+The patient is in intensive care.
+The patient can either recover or die.
+If all ICU units are taken, 100 % of patients requiring it die.
+
+Deceased::
+The patient deceased.
+
+=== Age Groups
+
+=== Infection
+
+Infection occurs spatially so that susceptible persons nearby are more probable to get infected.
+We use a neighbourhood function _d_ = 1+1/_rnd_(), where _rnd_() is a random number [0..1].
+The lattice wraps around the edges.
+
+Age group affects infection.
+Age group contact matrix is considered to determine the age group of the person to be infected.
+As the population lattice is not organized to reflect real-life contact neighbourhoods regarding age, we fake that by searching for a matching age group from the immediate vicinity of the infection target.
+
+If the state of the infection target is any other than susceptible, infection does not occur.
+
+=== Events
+
+Incoming infections::
+...
+
+Travel restrictions::
+...
+
+Social distancing measures::
+...

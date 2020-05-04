@@ -1,0 +1,21 @@
+= covid19-experiments
+
+This is a collection of my test simulations.
+They are simplified models for "educational purposes".
+Their realism varies, from vary crude models to somewhat more realistic.
+The parameters are currently for Finland.
+
+== Building the lattice model
+
+Requirements (Ubuntu):
+
+* `libmagick++-dev`
++
+Used for animation output.
+
+The Makefile:
+
+* Requires path to `Magick++-config`
+
+Magick++ is a real hassle with its build files.
+If you're using an IDE to develop the application, you need to have the Magick++ headers in the IDE's project path.
